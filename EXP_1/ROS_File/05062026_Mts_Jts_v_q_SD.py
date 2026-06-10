@@ -219,7 +219,7 @@ def user_input(cobot, node):
                     cobot.waitForTime(1)
                     print(f"    Velocity {vel}, Cycle No: {i + 1} Completed...")
                 
-                vel = 30.0 
+                vel += 30.0 
 
             node.stop_logging()
             print(">>> Use Dead Man Switch If Robot Is Real...")
