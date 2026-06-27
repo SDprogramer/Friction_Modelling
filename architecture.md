@@ -1,1 +1,0 @@
-A new folder with distinguished joints have been created.
