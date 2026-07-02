@@ -218,9 +218,8 @@ __marimo__/
 .streamlit/secrets.toml
 
 
-/Docs
-/Learning
-/Reports
+/EXP_1/Docs
+/EXP_1/Reports
+/EXP_1/Presentations
 /Research Papers
-/Savya Robotics
-/Photos
+/Svaya_Robotics
