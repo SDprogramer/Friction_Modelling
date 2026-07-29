@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robotic-Arm Joint Friction Modelling · CSIR-CMERI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🦾</span>
+      <div class="brand-text">
+        <h1>Joint Friction Modelling</h1>
+        <p class="sub">6-DoF Collaborative Arm · CSIR-CMERI · Svaya Robotics</p>
+      </div>
+    </div>
+    <div class="meta" id="meta"><span class="pill">connecting…</span></div>
+  </header>
+
+  <!-- ===================== NAV ===================== -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="methodology">Methodology</button>
+    <button class="tab" data-tab="data">Data Explorer</button>
+    <button class="tab" data-tab="models">Run Models</button>
+    <button class="tab" data-tab="results">Results</button>
+  </nav>
+
+  <main>
+    <!-- ===================== OVERVIEW ===================== -->
+    <section id="overview" class="panel active">
+      <div class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">CSIR-CMERI · Durgapur</span>
+          <h2 class="hero-title">Estimating joint friction in a<br /><span class="grad">harmonic-drive robotic arm</span></h2>
+          <p class="hero-lede">
+            A reproducible pipeline that identifies friction torque at each joint of
+            a 6-DoF Svaya Robotics collaborative arm using three complementary
+            approaches — an analytical Coulomb–Viscous fit, a black-box neural
+            network, and a physics-informed LuGre network. Drive the entire
+            workflow, from raw logs to identified parameters, from this page.
+          </p>
+          <div class="hero-actions">
+            <button class="btn lg" data-goto="models">▶ Run the pipeline</button>
+            <button class="btn ghost lg" data-goto="methodology">Read the methodology</button>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="hero-eq">
+            <div class="eq-label">Friction-torque label</div>
+            <div class="eq-main">T<sub>f</sub> = N·T<sub>m</sub> + T<sub>j</sub></div>
+            <div class="eq-note">gear ratio <b>N = 100</b> · motor + joint-side torque</div>
+          </div>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+      </div>
+
+      <h3 class="section-h">Project status</h3>
+      <div class="cards" id="status-cards"></div>
+
+      <h3 class="section-h">Data readiness per joint</h3>
+      <div class="table-wrap"><table id="status-table"></table></div>
+      <p class="foot-note">
+        Joints <b>J1, J2, J3, J5</b> are modelled; J4 and J6 are excluded. Logs are
+        sampled at 200&nbsp;Hz from the Svaya control API.
+      </p>
+    </section>
+
+    <!-- ===================== METHODOLOGY ===================== -->
+    <section id="methodology" class="panel">
+      <h2>Three friction-modelling approaches</h2>
+      <p class="lede">
+        Each model maps joint state (position <i>q</i>, velocity <i>v</i>) to the
+        friction torque <i>T<sub>f</sub></i>, but from a different modelling
+        philosophy. Together they trade interpretability against expressive power.
+      </p>
+
+      <div class="method-grid">
+        <article class="method-card">
+          <div class="method-head">
+            <span class="method-badge phys">01</span>
+            <h4>Modified Coulomb–Viscous</h4>
+          </div>
+          <p>Closed-form analytical model fit by robust non-linear least squares
+             (SciPy TRF, Huber loss). Fully interpretable — every parameter is a
+             physical friction coefficient.</p>
+          <div class="eq-box">
+            τ<sub>f</sub> = T<sub>c</sub>·tanh(v<sub>eff</sub>/V<sub>s</sub>) + B<sub>v</sub>·v<sub>eff</sub> + C<sub>0</sub>
+            <span class="eq-sub">v<sub>eff</sub> = v + C<sub>p</sub>·q</span>
+          </div>
+          <ul class="method-list">
+            <li><b>T<sub>c</sub></b> — Coulomb torque</li>
+            <li><b>B<sub>v</sub></b> — viscous coefficient</li>
+            <li><b>V<sub>s</sub></b> — Stribeck velocity scale</li>
+          </ul>
+        </article>
+
+        <article class="method-card">
+          <div class="method-head">
+            <span class="method-badge nn">02</span>
+            <h4>Black-box Neural Network</h4>
+          </div>
+          <p>A multilayer perceptron that learns the friction map directly from
+             data with no physical prior. Captures asymmetries and non-linearities
+             the analytical model cannot express.</p>
+          <div class="eq-box">
+            [q, v] → Dense(64) → Dense(64) → Dense(32) → T<sub>f</sub>
+            <span class="eq-sub">ReLU activations · cycle-aware train/test split</span>
+          </div>
+          <ul class="method-list">
+            <li>Highest raw accuracy</li>
+            <li>No physical interpretation</li>
+            <li>Benchmark / upper bound</li>
+          </ul>
+        </article>
+
+        <article class="method-card">
+          <div class="method-head">
+            <span class="method-badge pinn">03</span>
+            <h4>LuGre PINN</h4>
+          </div>
+          <p>A physics-informed network that identifies the parameters of the
+             dynamic LuGre friction model by embedding its steady-state law in the
+             loss function — data-driven, yet physically grounded.</p>
+          <div class="eq-box">
+            g(v) = F<sub>c</sub> + (F<sub>s</sub>−F<sub>c</sub>)·e<sup>−(v/v<sub>s</sub>)²</sup>
+            <span class="eq-sub">identifies σ₀, σ₁, σ₂, F<sub>c</sub>, F<sub>s</sub>, v<sub>s</sub></span>
+          </div>
+          <ul class="method-list">
+            <li>Interpretable LuGre parameters</li>
+            <li>Physics-constrained fit</li>
+            <li>Best of both worlds</li>
+          </ul>
+        </article>
+      </div>
+
+      <h3 class="section-h">From raw logs to identified friction</h3>
+      <div class="pipeline">
+        <div class="pstep"><span class="pnum">1</span><div><b>Clean</b><small>select columns from raw API logs</small></div></div>
+        <div class="parrow">→</div>
+        <div class="pstep"><span class="pnum">2</span><div><b>Velocity</b><small>differentiate position dq/dt</small></div></div>
+        <div class="parrow">→</div>
+        <div class="pstep"><span class="pnum">3</span><div><b>Acceleration</b><small>differentiate velocity dv/dt</small></div></div>
+        <div class="parrow">→</div>
+        <div class="pstep"><span class="pnum">4</span><div><b>Model</b><small>fit / train the three models</small></div></div>
+      </div>
+    </section>
+
+    <!-- ===================== DATA EXPLORER ===================== -->
+    <section id="data" class="panel">
+      <h2>Data explorer</h2>
+      <p class="lede">Inspect the measured signals and the friction–velocity
+        relationship for each joint.</p>
+      <div class="controls">
+        <label>Joint
+          <select id="data-joint"></select>
+        </label>
+        <button id="load-data" class="btn">Load</button>
+      </div>
+      <div class="plots">
+        <figure><figcaption>Raw signals</figcaption>
+          <img id="plot-raw" alt="raw signals" /></figure>
+        <figure><figcaption>Friction torque vs velocity</figcaption>
+          <img id="plot-friction" alt="friction vs velocity" /></figure>
+      </div>
+      <h3 class="section-h">Sample rows</h3>
+      <div class="table-wrap"><table id="data-table"></table></div>
+    </section>
+
+    <!-- ===================== RUN MODELS ===================== -->
+    <section id="models" class="panel">
+      <h2>Run pipeline &amp; models</h2>
+      <p class="lede">Each run executes as a background job on the server; progress
+        and console output stream into the log below.</p>
+      <div class="model-grid" id="model-grid"></div>
+      <h3 class="section-h">Run log</h3>
+      <pre id="run-log" class="log">No runs yet — press <b>Run</b> on any card above.</pre>
+    </section>
+
+    <!-- ===================== RESULTS ===================== -->
+    <section id="results" class="panel">
+      <h2>Identified parameters &amp; metrics</h2>
+      <p class="lede">Read back the saved output of each trained model.</p>
+      <div class="controls">
+        <label>Model
+          <select id="result-model">
+            <option value="physics">Coulomb–Viscous (physics)</option>
+            <option value="nn">Black-box neural network</option>
+            <option value="pinn">LuGre PINN</option>
+          </select>
+        </label>
+        <button id="load-results" class="btn">Load results</button>
+      </div>
+      <div class="table-wrap"><table id="results-table"></table></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span id="footer-version">friction-modelling</span>
+      <span class="footer-org">CSIR–CMERI, Durgapur · Robotic-arm friction research</span>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

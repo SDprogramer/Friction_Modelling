@@ -218,8 +218,5 @@ __marimo__/
 .streamlit/secrets.toml
 
 
-/EXP_1/Docs
-/EXP_1/Reports
-/EXP_1/Presentations
-/Research Papers
-/Svaya_Robotics
+# Docs — kept on disk, never committed (binaries, personal files, manuals, photos)
+/docs/

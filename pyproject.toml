@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "friction-modelling"
+version = "1.0.0"
+description = "Joint friction estimation for a 6-DoF robotic arm (CSIR-CMERI)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26,<2.3",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "scikit-learn>=1.3",
+    "matplotlib>=3.7",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "streamlit>=1.30",
+]
+
+[project.optional-dependencies]
+ml = ["tensorflow-cpu>=2.18,<2.22"]
+
+[project.scripts]
+friction = "friction_modelling.cli:main"
+friction-web = "friction_modelling.webapp.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
