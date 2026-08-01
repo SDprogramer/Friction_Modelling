@@ -11,3 +11,11 @@ fastapi>=0.110
 uvicorn[standard]>=0.27
 python-multipart>=0.0.9
 streamlit>=1.30
+
+# --- PyTorch with CUDA 12.8 (GPU) ---
+# pip needs this extra index to find the CUDA-enabled wheels; without it,
+# pip installs the CPU-only build from the default PyPI index instead.
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch>=2.9,<2.12
+torchvision>=0.20
+torchaudio>=2.9
