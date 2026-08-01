@@ -3,20 +3,20 @@ REM ============================================================
 REM  Friction Modelling - ONE-CLICK start
 REM  Run this instead of setup.bat / run_website.bat / etc by hand.
 REM  It will:
-REM    1. Create + populate .venv on Python 3.13 (only the first time)
+REM    1. Create + populate cmerivenv on Python 3.13 (only the first time)
 REM    2. Show a menu to launch website / dashboard / pipeline / all
 REM ============================================================
 
 setlocal
 cd /d "%~dp0"
 
-if exist .venv\Scripts\python.exe (
+if exist cmerivenv\Scripts\python.exe (
     goto :menu
 )
 
 echo.
 echo ============================================================
-echo  First run detected - setting up .venv (this only happens once)
+echo  First run detected - setting up cmerivenv (this only happens once)
 echo ============================================================
 
 echo.
@@ -34,12 +34,12 @@ if errorlevel 1 (
 py -3.13 --version
 
 echo.
-echo === Creating virtual environment in .venv ===
-py -3.13 -m venv .venv
+echo === Creating virtual environment in cmerivenv ===
+py -3.13 -m venv cmerivenv
 
 echo.
 echo === Installing dependencies (this can take a few minutes) ===
-call .venv\Scripts\activate.bat
+call cmerivenv\Scripts\activate.bat
 python -m pip install --upgrade pip
 if errorlevel 1 (
     echo [ERROR] Failed to upgrade pip. See error above.
@@ -75,7 +75,7 @@ timeout /t 2 >nul
 
 :menu
 cls
-call .venv\Scripts\activate.bat
+call cmerivenv\Scripts\activate.bat
 echo ============================================================
 echo   Friction Modelling - what do you want to run?
 echo ============================================================
@@ -109,8 +109,8 @@ if "%choice%"=="3" (
     goto :menu
 )
 if "%choice%"=="4" (
-    start "Friction Modelling - Website" cmd /k "cd /d %~dp0 && call .venv\Scripts\activate.bat && python -m friction_modelling.webapp --port 8501 --reload"
-    start "Friction Modelling - Dashboard" cmd /k "cd /d %~dp0 && call .venv\Scripts\activate.bat && streamlit run dashboard\streamlit_app.py --server.port 8502"
+    start "Friction Modelling - Website" cmd /k "cd /d %~dp0 && call cmerivenv\Scripts\activate.bat && python -m friction_modelling.webapp --port 8501 --reload"
+    start "Friction Modelling - Dashboard" cmd /k "cd /d %~dp0 && call cmerivenv\Scripts\activate.bat && streamlit run dashboard\streamlit_app.py --server.port 8502"
     echo Both launched in separate windows:
     echo   Website:   http://localhost:8501
     echo   Dashboard: http://localhost:8502
@@ -118,7 +118,7 @@ if "%choice%"=="4" (
     goto :menu
 )
 if "%choice%"=="5" (
-    rmdir /s /q .venv
+    rmdir /s /q cmerivenv
     call "%~f0"
     exit /b 0
 )
